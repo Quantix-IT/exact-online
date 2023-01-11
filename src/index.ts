@@ -13,24 +13,21 @@ export class Exact {
   connected: boolean
   inUse: boolean
   refreshing: boolean
-  divisions: { name: string; code: string }[]
+
+  currentDivision: string | null
 
   constructor({
     clientId,
     clientSecret,
     redirectUri,
-    divisions = [],
   }: {
     clientId: string
     clientSecret: string
     redirectUri: string
-    divisions: { name: string; code: string }[]
   }) {
     if (!clientId) throw new Error('EXACT: Please provide a clientId.')
     if (!clientSecret) throw new Error('EXACT: Please provide a clientSecret.')
     if (!redirectUri) throw new Error('EXACT: Please provide a redirectUri.')
-    if (divisions.length === 0)
-      throw new Error('EXACT: Please provide divisions.')
 
     this.clientId = clientId
     this.clientSecret = clientSecret
@@ -39,7 +36,7 @@ export class Exact {
     this.connected = false
     this.inUse = false
     this.refreshing = false
-    this.divisions = divisions
+    this.currentDivision = null
   }
 
   getLoginUrl({
@@ -123,29 +120,13 @@ export class Exact {
     }
 
     try {
-      await this.request({
-        endpoint: '/current/Me',
-        division: this.divisions[0].code,
-      })
+      await this.getCurrentDivision()
 
       this.connected = true
       return true
     } catch (err) {
-      try {
-        await this.refreshTokens()
-        await this.request({
-          endpoint: '/current/Me',
-          division: this.divisions[0].code,
-        })
-
-        this.connected = true
-        return true
-      } catch (err) {
-        console.log(
-          'EXACT WARNING: Initialize failed, please connect to exact.'
-        )
-        return false
-      }
+      console.log('EXACT WARNING: Initialize failed, please connect to exact.')
+      return false
     }
   }
 
@@ -231,6 +212,47 @@ export class Exact {
     }
   }
 
+  async getCurrentDivision() {
+    try {
+      this.inUse = true
+
+      const query = new URLSearchParams({
+        Select: 'CurrentDivision',
+      }).toString()
+
+      const url = BASE_URL + 'current/Me?' + query
+
+      const token = this.getAccessToken()
+      if (!token) throw new Error('EXACT: Invalid access token.')
+
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (res.status === 401) {
+        await this.refreshTokens()
+        return await this.getCurrentDivision()
+      }
+
+      const data = await res.json()
+
+      const user = data.d.results[0]
+
+      this.inUse = false
+      this.currentDivision = user.CurrentDivision
+
+      return user.CurrentDivision
+    } catch (err) {
+      this.inUse = false
+      throw err
+    }
+  }
+
   async request({
     endpoint,
     params = {},
@@ -244,10 +266,14 @@ export class Exact {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
     headers?: object
     payload?: any | null
-    division: string
+    division?: string
   }): Promise<any> {
     try {
       if (!this.connected) throw new Error('EXACT: Not connected.')
+
+      if (!division && !this.currentDivision) {
+        await this.getCurrentDivision()
+      }
 
       if (this.inUse || this.refreshing) {
         await sleep(1000)

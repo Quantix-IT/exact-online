@@ -19,16 +19,6 @@ const exact = new Exact({
   clientId: 'CLIENT_ID',
   clientSecret: 'CLIENT_SECRET',
   redirectUri: 'https://example.com/exact-online/connect',
-  divisions: [
-    {
-      name: 'PROD',
-      code: '1234567',
-    },
-    {
-      name: 'TEST',
-      code: '7654321',
-    },
-  ],
 })
 
 await exact.initialize()
@@ -43,16 +33,6 @@ const exact = new Exact({
   clientId: 'CLIENT_ID',
   clientSecret: 'CLIENT_SECRET',
   redirectUri: 'https://example.com/exact-online/connect',
-  divisions: [
-    {
-      name: 'PROD',
-      code: '1234567',
-    },
-    {
-      name: 'TEST',
-      code: '7654321',
-    },
-  ],
 })
 
 await exact.initialize()
