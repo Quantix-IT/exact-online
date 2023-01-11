@@ -212,7 +212,7 @@ export class Exact {
     }
   }
 
-  async getCurrentDivision() {
+  async getCurrentDivision(): Promise<string> {
     try {
       this.inUse = true
 
