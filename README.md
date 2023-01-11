@@ -81,6 +81,6 @@ const connected = await exact.connect(code)
 
 ### Exact online API documentation
 
-You can find the Exact online API documentation (here)[https://start.exactonline.nl/docs/HlpRestAPIResources.aspx].
+You can find the Exact online API documentation [here](https://start.exactonline.nl/docs/HlpRestAPIResources.aspx).
 
-More information about the API can be found (here)[https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-restrefdocs].
+More information about the API can be found [here](https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-restrefdocs).
