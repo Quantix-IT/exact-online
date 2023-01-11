@@ -372,7 +372,7 @@ export class Exact {
 
       this.inUse = false
 
-      return data
+      return data.d
     } catch (err) {
       this.inUse = false
       throw err
