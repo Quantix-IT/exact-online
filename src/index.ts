@@ -236,6 +236,7 @@ export class Exact {
 
       if (res.status === 401) {
         await this.refreshTokens()
+        this.inUse = false
         return await this.getCurrentDivision()
       }
 
@@ -269,12 +270,6 @@ export class Exact {
     division?: string
   }): Promise<any> {
     try {
-      if (!this.connected) throw new Error('EXACT: Not connected.')
-
-      if (!division && !this.currentDivision) {
-        await this.getCurrentDivision()
-      }
-
       if (this.inUse || this.refreshing) {
         await sleep(1000)
         return await this.request({
@@ -288,6 +283,12 @@ export class Exact {
       }
 
       this.inUse = true
+
+      if (!this.connected) throw new Error('EXACT: Not connected.')
+
+      if (!division && !this.currentDivision) {
+        await this.getCurrentDivision()
+      }
 
       const query = new URLSearchParams({ ...params }).toString()
 
@@ -309,6 +310,7 @@ export class Exact {
 
       if (res.status === 401) {
         await this.refreshTokens()
+        this.inUse = false
         return await this.request({
           endpoint,
           params,
@@ -368,9 +370,9 @@ export class Exact {
           )
       }
 
-      if (res.status === 204) return true
-
       this.inUse = false
+
+      if (res.status === 204) return true
 
       return data.d
     } catch (err) {
